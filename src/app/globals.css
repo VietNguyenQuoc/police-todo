@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+@layer base {
+  html {
+    font-family: "Inter", system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+@layer components {
+  .container-safe {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .form-container {
+    @apply max-w-md mx-auto bg-white p-8 rounded-lg shadow-sm border border-gray-200;
+  }
+
+  .task-card {
+    @apply bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow;
+  }
+
+  .task-card.overdue {
+    @apply border-red-300 bg-red-50;
+  }
+
+  .task-card.due-soon {
+    @apply border-yellow-300 bg-yellow-50;
+  }
+}
