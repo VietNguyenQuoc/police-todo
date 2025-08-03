@@ -8,29 +8,28 @@ import {
   orderBy,
   doc,
   getDoc,
+  updateDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { verifyToken } from "@/utils/auth";
-import { CreateTaskData, ApiResponse, Task, TaskWithUser } from "@/types";
+import { getAuthUser } from "@/utils/auth";
+import {
+  CreateTaskData,
+  ApiResponse,
+  Task,
+  TaskWithUser,
+  UpdateTaskData,
+  AuthUser,
+  User,
+} from "@/types";
+
+import { omitBy, isNil } from "lodash";
 
 export async function POST(request: NextRequest) {
   try {
     // Get auth token from headers
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json<ApiResponse>(
-        {
-          success: false,
-          message: "Không có quyền truy cập",
-        },
-        { status: 401 }
-      );
-    }
+    const user = getAuthUser(request) as AuthUser;
 
-    const [, token] = authHeader.split("Bearer ");
-    const user = verifyToken(token);
-
-    if (!user || user.role !== "admin") {
+    if (user.role !== "admin") {
       return NextResponse.json<ApiResponse>(
         {
           success: false,
@@ -103,29 +102,7 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Get auth token from headers
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return NextResponse.json<ApiResponse>(
-        {
-          success: false,
-          message: "Không có quyền truy cập",
-        },
-        { status: 401 }
-      );
-    }
-
-    const [, token] = authHeader.split("Bearer ");
-    const user = verifyToken(token);
-
-    if (!user) {
-      return NextResponse.json<ApiResponse>(
-        {
-          success: false,
-          message: "Token không hợp lệ",
-        },
-        { status: 401 }
-      );
-    }
+    const user = getAuthUser(request) as AuthUser;
 
     const tasksRef = collection(db, "tasks");
     let q;
@@ -152,11 +129,11 @@ export async function GET(request: NextRequest) {
 
       // Get assigned user details
       const assignedUserRef = doc(db, "users", taskData.assignedTo);
-      const assignedUserDoc = await getDoc(assignedUserRef);
+      const assignedUser = (await getDoc(assignedUserRef)).data() as User;
 
       // Get assigned by user details
       const assignedByUserRef = doc(db, "users", taskData.assignedBy);
-      const assignedByUserDoc = await getDoc(assignedByUserRef);
+      const assignedByUser = (await getDoc(assignedByUserRef)).data() as User;
 
       tasksWithUsers.push({
         id: taskDoc.id,
@@ -164,21 +141,13 @@ export async function GET(request: NextRequest) {
         dueDate: new Date((taskData.dueDate as any).seconds * 1000),
         assignedToUser: {
           id: taskData.assignedTo,
-          name: assignedUserDoc.exists()
-            ? assignedUserDoc.data()?.name || "Unknown"
-            : "Unknown",
-          phoneNumber: assignedUserDoc.exists()
-            ? assignedUserDoc.data()?.phoneNumber
-            : "Unknown",
+          name: assignedUser.name,
+          phoneNumber: assignedUser.phoneNumber,
         },
         assignedByUser: {
           id: taskData.assignedBy,
-          name: assignedByUserDoc.exists()
-            ? assignedByUserDoc.data()?.name || "Unknown"
-            : "Unknown",
-          phoneNumber: assignedByUserDoc.exists()
-            ? assignedByUserDoc.data()?.phoneNumber
-            : "Unknown",
+          name: assignedByUser.name,
+          phoneNumber: assignedByUser.phoneNumber,
         },
       });
     }
@@ -189,6 +158,52 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Get tasks error:", error);
+    return NextResponse.json<ApiResponse>(
+      {
+        success: false,
+        message: "Lỗi hệ thống",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const user = getAuthUser(request) as AuthUser;
+
+    const body: UpdateTaskData = await request.json();
+    const { id, status, title, description, dueDate, assignedTo } = body;
+
+    if (user.id !== assignedTo) {
+      return NextResponse.json<ApiResponse>(
+        {
+          success: false,
+          message: "Không có quyền truy cập",
+        },
+        { status: 403 }
+      );
+    }
+
+    const patchData = omitBy(
+      {
+        status,
+        title,
+        description,
+        dueDate,
+      },
+      isNil
+    );
+
+    const taskRef = doc(db, "tasks", id);
+    await updateDoc(taskRef, patchData);
+
+    return NextResponse.json<ApiResponse>({
+      success: true,
+      message: "Cập nhật công việc thành công",
+    });
+  } catch (error) {
+    console.error("Update task error:", error);
     return NextResponse.json<ApiResponse>(
       {
         success: false,

@@ -1,11 +1,12 @@
 export type Role = "admin" | "member";
+export type TaskStatus = "pending" | "completed";
 
 export interface User {
   id: string;
   phoneNumber: string;
   password: string;
   name: string;
-  role: "admin" | "member";
+  role: Role;
 }
 
 export interface Task {
@@ -15,15 +16,12 @@ export interface Task {
   assignedTo: string; // User ID
   assignedBy: string; // Admin User ID
   dueDate: Date;
-  status: "pending" | "completed";
+  status: TaskStatus;
 }
 
-export interface CreateTaskData {
-  title: string;
-  description: string;
-  assignedTo: string;
-  dueDate: string;
-}
+export type CreateTaskData = Omit<Task, "id" | "status">;
+
+export type UpdateTaskData = Pick<Task, "id"> & Partial<Omit<Task, "id">>;
 
 export interface CreateUserData {
   name: string;

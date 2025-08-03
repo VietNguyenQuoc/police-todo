@@ -23,15 +23,12 @@
     @apply max-w-md mx-auto bg-white p-8 rounded-lg shadow-sm border border-gray-200;
   }
 
-  .task-card {
-    @apply bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition-shadow;
-  }
-
+  /*
   .task-card.overdue {
     @apply border-red-300 bg-red-50;
   }
 
   .task-card.due-soon {
     @apply border-yellow-300 bg-yellow-50;
-  }
+  } */
 }

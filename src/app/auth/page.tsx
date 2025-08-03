@@ -80,7 +80,7 @@ export default function AuthPage() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <Toaster position="bottom-right" />
 
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md p-8">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">
             Quản lý công việc
@@ -93,7 +93,7 @@ export default function AuthPage() {
             <Input
               label="Số Điện Thoại"
               type="tel"
-              placeholder="(555) 123-4567"
+              placeholder="(091) 2345-678"
               error={errors.phoneNumber?.message}
               {...register("phoneNumber", {
                 required: "Vui lòng nhập số điện thoại",

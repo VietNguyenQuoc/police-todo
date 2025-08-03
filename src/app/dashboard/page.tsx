@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
 import {
@@ -13,36 +13,35 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
+import { Card, CardContent } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
 import { StatCard } from "@/components/ui/StatCard";
 import { CreateUserForm } from "@/components/forms/CreateUserForm";
 import { CreateTaskForm } from "@/components/forms/CreateTaskForm";
-import { TaskCard } from "@/components/TaskCard";
+import { TaskCard } from "@/components/ui/TaskCard";
 import { TaskWithUser, AuthUser, ApiResponse } from "@/types";
 
 export default function DashboardPage() {
-  const [user, setUser] = useState<AuthUser | null>(null);
   const [tasks, setTasks] = useState<TaskWithUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateUserModal, setShowCreateUserModal] = useState(false);
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const router = useRouter();
+  const token = useMemo(() => localStorage.getItem("auth_token"), []);
+  const user = useMemo(() => {
+    const userData = localStorage.getItem("user_data");
+    return userData ? (JSON.parse(userData) as AuthUser) : null;
+  }, []);
 
   const isAdmin = user?.role === "admin";
 
   useEffect(() => {
-    const token = localStorage.getItem("auth_token");
-    const userData = localStorage.getItem("user_data");
-
-    if (!token || !userData) {
+    if (!token || !user) {
       router.push("/auth");
       return;
     }
 
     try {
-      const parsedUser = JSON.parse(userData) as AuthUser;
-      setUser(parsedUser);
       fetchTasks();
     } catch (error) {
       console.error("Invalid user data:", error);
@@ -54,18 +53,22 @@ export default function DashboardPage() {
 
   const fetchTasks = async () => {
     try {
-      const token = localStorage.getItem("auth_token");
-
       const response = await fetch("/api/tasks", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      const result: ApiResponse = await response.json();
+      const result: ApiResponse<TaskWithUser[]> = await response.json();
 
       if (result.success) {
-        setTasks(result.data || []);
+        const sortedTasks = result.data?.sort((a, b) => {
+          if (a.status === "completed") return 1;
+          if (b.status === "completed") return -1;
+          return 0;
+        });
+        
+        setTasks(sortedTasks || []);
       } else {
         toast.error("Không thể tải danh sách công việc");
       }
@@ -84,6 +87,30 @@ export default function DashboardPage() {
   const handleCreateTaskSuccess = () => {
     setShowCreateTaskModal(false);
     fetchTasks(); // Refresh tasks
+  };
+
+  const handleCompleteTask = async (taskId: string) => {
+    const response = await fetch("api/tasks", {
+      method: "PATCH",
+      body: JSON.stringify({
+        id: taskId,
+        status: "completed",
+        assignedTo: user?.id,
+      }),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const body = (await response.json()) as ApiResponse;
+
+    if (body.success) {
+      toast.success("Cập nhật công việc thành công");
+      fetchTasks();
+    } else {
+      toast.error(body.message || "Lỗi hệ thống");
+    }
   };
 
   const getTaskStats = () => {
@@ -287,6 +314,7 @@ export default function DashboardPage() {
                     key={task.id}
                     task={task}
                     showAssignedTo={isAdmin}
+                    onCompleteTask={() => handleCompleteTask(task.id)}
                   />
                 ))}
               </div>

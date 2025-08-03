@@ -4,49 +4,54 @@ import React from "react";
 import { format, isAfter, isBefore, addDays } from "date-fns";
 import { Calendar, User, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
+import { Message } from "@/components/ui/Message";
+import { Badge } from "@/components/ui/Badge";
 import { TaskWithUser } from "@/types";
 import { cn } from "@/utils/cn";
+import { Button } from "./Button";
 
 interface TaskCardProps {
   task: TaskWithUser;
   showAssignedTo?: boolean;
+  onCompleteTask?: () => void;
 }
 
 export const TaskCard: React.FC<TaskCardProps> = ({
   task,
   showAssignedTo = false,
+  onCompleteTask,
 }) => {
   const now = new Date();
   const dueDate =
     task.dueDate instanceof Date ? task.dueDate : new Date(task.dueDate);
   const threeDaysFromNow = addDays(now, 3);
 
+  const isCompleted = task.status === "completed";
   const isOverdue = isBefore(dueDate, now) && task.status === "pending";
   const isDueSoon =
     isAfter(dueDate, now) &&
     isBefore(dueDate, threeDaysFromNow) &&
     task.status === "pending";
 
-  const getStatusColor = () => {
-    if (task.status === "completed") return "text-green-600";
-    if (isOverdue) return "text-red-600";
-    if (isDueSoon) return "text-yellow-600";
-    return "text-gray-600";
-  };
-
   const getStatusText = () => {
-    if (task.status === "completed") return "Hoàn thành";
+    if (isCompleted) return "Hoàn thành";
     if (isOverdue) return "Quá hạn";
     if (isDueSoon) return "Sắp đến hạn";
     return "Đang chờ";
   };
 
+  const getStatusVariant = () => {
+    if (isCompleted) return "success";
+    if (isOverdue) return "error";
+    if (isDueSoon) return "warning";
+    return "default";
+  };
+
   return (
     <Card
       className={cn(
-        "task-card",
-        isOverdue && "overdue",
-        isDueSoon && "due-soon"
+        isOverdue && "border-red-300",
+        isDueSoon && "border-yellow-300"
       )}
     >
       <CardContent className="p-4">
@@ -54,21 +59,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           <h3 className="font-semibold text-gray-900 text-lg leading-tight">
             {task.title}
           </h3>
-          <span
-            className={cn(
-              "inline-flex items-center px-2 py-1 rounded-full text-xs font-medium",
-              task.status === "completed" && "bg-green-100 text-green-800",
-              isOverdue && "bg-red-100 text-red-800",
-              isDueSoon && "bg-yellow-100 text-yellow-800",
-              !isOverdue &&
-                !isDueSoon &&
-                task.status === "pending" &&
-                "bg-gray-100 text-gray-800"
-            )}
-          >
-            <Clock size={12} className="mr-1" />
-            {getStatusText()}
-          </span>
+          <Badge variant={getStatusVariant()}>{getStatusText()}</Badge>
         </div>
 
         <p className="text-gray-600 mb-4 text-base leading-relaxed">
@@ -91,16 +82,21 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           </div>
         </div>
 
-        {task.status === "pending" && isOverdue && (
-          <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+        {!isCompleted && isOverdue && (
+          <Message type="error">
             ⚠️ Công việc này đã quá hạn và cần được hoàn thành ngay.
-          </div>
+          </Message>
         )}
 
-        {task.status === "pending" && isDueSoon && (
-          <div className="mt-3 p-2 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-700">
+        {!isCompleted && isDueSoon && (
+          <Message type="warning">
             🕒 Công việc này sắp đến hạn. Vui lòng ưu tiên hoàn thành.
-          </div>
+          </Message>
+        )}
+        {!isCompleted && onCompleteTask && (
+          <Button size="sm" onClick={onCompleteTask} className="mt-4">
+            Hoàn thành
+          </Button>
         )}
       </CardContent>
     </Card>

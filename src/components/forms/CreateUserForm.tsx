@@ -99,13 +99,13 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
       <Input
         label="Số Điện Thoại"
         type="tel"
-        placeholder="(555) 123-4567"
+        placeholder="(091) 2345-678"
         error={errors.phoneNumber?.message}
         {...register("phoneNumber", {
           required: "Vui lòng nhập số điện thoại",
           minLength: {
             value: 10,
-            message: "Số điện thoại phải có ít nhất 10 chữ số",
+            message: "Số điện thoại phải có đúng 10 chữ số",
           },
           onChange: (e) => {
             e.target.value = formatPhoneNumber(e.target.value);
