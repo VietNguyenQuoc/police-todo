@@ -21,10 +21,10 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
   return (
     <header className="bg-white border-b border-gray-200 px-4 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-top space-x-4">
           <h1 className="text-xl font-bold text-gray-900">Chào {user?.name}</h1>
           {user && (
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800">
+            <span className="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800">
               {user.role === "admin" ? "Quản trị viên" : "Thành viên"}
             </span>
           )}

@@ -15,6 +15,7 @@ import { Header } from "@/components/layout/Header";
 import { Button } from "@/components/ui/Button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { Modal } from "@/components/ui/Modal";
+import { StatCard } from "@/components/ui/StatCard";
 import { CreateUserForm } from "@/components/forms/CreateUserForm";
 import { CreateTaskForm } from "@/components/forms/CreateTaskForm";
 import { TaskCard } from "@/components/TaskCard";
@@ -27,6 +28,8 @@ export default function DashboardPage() {
   const [showCreateUserModal, setShowCreateUserModal] = useState(false);
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const router = useRouter();
+
+  const isAdmin = user?.role === "admin";
 
   useEffect(() => {
     const token = localStorage.getItem("auth_token");
@@ -135,18 +138,16 @@ export default function DashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              {user.role === "admin"
-                ? "Bảng điều khiển quản trị"
-                : "Công việc của tôi"}
+              {isAdmin ? "Bảng điều khiển quản trị" : "Công việc của tôi"}
             </h1>
             <p className="text-gray-600 mt-1">
-              {user.role === "admin"
+              {isAdmin
                 ? "Quản lý công việc và thành viên trong nhóm"
                 : "Xem và theo dõi các công việc được giao"}
             </p>
           </div>
 
-          {user.role === "admin" && (
+          {isAdmin && (
             <div className="flex flex-col sm:flex-row gap-3">
               <Button
                 onClick={() => setShowCreateUserModal(true)}
@@ -169,69 +170,33 @@ export default function DashboardPage() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Calendar className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Tổng công việc</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {stats.total}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            icon={Calendar}
+            color="blue"
+            label="Tổng công việc"
+            value={stats.total}
+          />
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-yellow-100 rounded-lg">
-                  <Clock className="h-5 w-5 text-yellow-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Đang chờ</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {stats.pending}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            icon={Clock}
+            color="yellow"
+            label="Đang chờ"
+            value={stats.pending}
+          />
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <CheckSquare className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Hoàn thành</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {stats.completed}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            icon={CheckSquare}
+            color="green"
+            label="Hoàn thành"
+            value={stats.completed}
+          />
 
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <AlertCircle className="h-5 w-5 text-red-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Quá hạn</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {stats.overdue}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            icon={AlertCircle}
+            color="red"
+            label="Quá hạn"
+            value={stats.overdue}
+          />
         </div>
 
         {/* Tasks Section */}
@@ -239,7 +204,7 @@ export default function DashboardPage() {
           {stats.dueSoon > 0 && (
             <div>
               <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                <AlertCircle className="h-5 w-5 text-yellow-600" />
+                <AlertCircle className="h-4 w-4 md:h-5 md:w-5 text-yellow-600" />
                 <span>Sắp đến hạn ({stats.dueSoon})</span>
               </h2>
               <div className="grid gap-4">
@@ -263,7 +228,7 @@ export default function DashboardPage() {
                     <TaskCard
                       key={task.id}
                       task={task}
-                      showAssignedTo={user.role === "admin"}
+                      showAssignedTo={isAdmin}
                     />
                   ))}
               </div>
@@ -273,7 +238,7 @@ export default function DashboardPage() {
           {stats.overdue > 0 && (
             <div>
               <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                <AlertCircle className="h-5 w-5 text-red-600" />
+                <AlertCircle className="h-4 w-4 md:h-5 md:w-5 text-red-600" />
                 <span>Quá hạn ({stats.overdue})</span>
               </h2>
               <div className="grid gap-4">
@@ -290,7 +255,7 @@ export default function DashboardPage() {
                     <TaskCard
                       key={task.id}
                       task={task}
-                      showAssignedTo={user.role === "admin"}
+                      showAssignedTo={isAdmin}
                     />
                   ))}
               </div>
@@ -309,7 +274,7 @@ export default function DashboardPage() {
                     Chưa có công việc nào
                   </h3>
                   <p className="text-gray-600">
-                    {user.role === "admin"
+                    {isAdmin
                       ? "Tạo công việc đầu tiên để bắt đầu."
                       : "Chưa có công việc nào được giao cho bạn."}
                   </p>
@@ -321,7 +286,7 @@ export default function DashboardPage() {
                   <TaskCard
                     key={task.id}
                     task={task}
-                    showAssignedTo={user.role === "admin"}
+                    showAssignedTo={isAdmin}
                   />
                 ))}
               </div>
