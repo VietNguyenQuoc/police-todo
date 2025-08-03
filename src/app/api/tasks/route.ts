@@ -161,7 +161,7 @@ export async function GET(request: NextRequest) {
       tasksWithUsers.push({
         id: taskDoc.id,
         ...taskData,
-        dueDate: taskData.dueDate,
+        dueDate: new Date((taskData.dueDate as any).seconds * 1000),
         assignedToUser: {
           id: taskData.assignedTo,
           name: assignedUserDoc.exists()

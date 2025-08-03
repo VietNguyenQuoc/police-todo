@@ -83,7 +83,7 @@ export default function AuthPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">
-            Quản Lý Công Việc
+            Quản lý công việc
           </CardTitle>
           <p className="text-gray-600 mt-2">Đăng nhập vào tài khoản của bạn</p>
         </CardHeader>
@@ -127,7 +127,7 @@ export default function AuthPage() {
               isLoading={isLoading}
               disabled={isLoading}
             >
-              Đăng Nhập
+              Đăng nhập
             </Button>
           </form>
 

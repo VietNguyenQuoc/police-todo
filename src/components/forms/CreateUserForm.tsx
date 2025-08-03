@@ -67,7 +67,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
         reset();
         onSuccess();
       } else {
-        toast.error(result.error || "Tạo thành viên thất bại");
+        toast.error(result.message || "Tạo thành viên thất bại");
       }
     } catch (error) {
       toast.error("Lỗi mạng. Vui lòng thử lại.");
@@ -142,7 +142,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
           isLoading={isLoading}
           disabled={isLoading}
         >
-          Tạo Thành Viên
+          Tạo thành viên
         </Button>
       </div>
     </form>

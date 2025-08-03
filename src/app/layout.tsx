@@ -5,7 +5,7 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Quản Lý Công Việc",
+  title: "Quản lý công việc",
   description: "Hệ thống quản lý công việc đơn giản cho nhóm",
   viewport: "width=device-width, initial-scale=1",
 };

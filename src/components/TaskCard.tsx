@@ -35,10 +35,10 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   };
 
   const getStatusText = () => {
-    if (task.status === "completed") return "Hoàn Thành";
-    if (isOverdue) return "Quá Hạn";
-    if (isDueSoon) return "Sắp Đến Hạn";
-    return "Đang Chờ";
+    if (task.status === "completed") return "Hoàn thành";
+    if (isOverdue) return "Quá hạn";
+    if (isDueSoon) return "Sắp đến hạn";
+    return "Đang chờ";
   };
 
   return (

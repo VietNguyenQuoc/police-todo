@@ -41,12 +41,15 @@ export async function POST(request: NextRequest) {
 
       if (userDoc.exists()) {
         const userData = userDoc.data();
+        const dueDate =
+          taskData.dueDate instanceof Date
+            ? taskData.dueDate
+            : new Date((taskData.dueDate as any).seconds * 1000);
+
         const success = await sendTaskReminder(
           userData.phoneNumber,
           taskData.title,
-          taskData.dueDate.toDate
-            ? taskData.dueDate.toDate()
-            : new Date(taskData.dueDate)
+          dueDate
         );
 
         if (success) {
@@ -74,7 +77,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json<ApiResponse>(
       {
         success: false,
-        error: "Internal server error",
+        message: "Lỗi hệ thống",
       },
       { status: 500 }
     );

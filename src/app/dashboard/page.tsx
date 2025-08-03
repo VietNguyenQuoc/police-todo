@@ -136,8 +136,8 @@ export default function DashboardPage() {
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
               {user.role === "admin"
-                ? "Bảng Điều Khiển Quản Trị"
-                : "Công Việc Của Tôi"}
+                ? "Bảng điều khiển quản trị"
+                : "Công việc của tôi"}
             </h1>
             <p className="text-gray-600 mt-1">
               {user.role === "admin"
@@ -154,14 +154,14 @@ export default function DashboardPage() {
                 className="flex items-center space-x-2"
               >
                 <Users size={18} />
-                <span>Thêm Thành Viên</span>
+                <span>Thêm thành viên</span>
               </Button>
               <Button
                 onClick={() => setShowCreateTaskModal(true)}
                 className="flex items-center space-x-2"
               >
                 <Plus size={18} />
-                <span>Tạo Công Việc</span>
+                <span>Tạo công việc</span>
               </Button>
             </div>
           )}
@@ -176,7 +176,7 @@ export default function DashboardPage() {
                   <Calendar className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Tổng Công Việc</p>
+                  <p className="text-sm text-gray-600">Tổng công việc</p>
                   <p className="text-2xl font-bold text-gray-900">
                     {stats.total}
                   </p>
@@ -192,7 +192,7 @@ export default function DashboardPage() {
                   <Clock className="h-5 w-5 text-yellow-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Đang Chờ</p>
+                  <p className="text-sm text-gray-600">Đang chờ</p>
                   <p className="text-2xl font-bold text-gray-900">
                     {stats.pending}
                   </p>
@@ -208,7 +208,7 @@ export default function DashboardPage() {
                   <CheckSquare className="h-5 w-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Hoàn Thành</p>
+                  <p className="text-sm text-gray-600">Hoàn thành</p>
                   <p className="text-2xl font-bold text-gray-900">
                     {stats.completed}
                   </p>
@@ -224,7 +224,7 @@ export default function DashboardPage() {
                   <AlertCircle className="h-5 w-5 text-red-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Quá Hạn</p>
+                  <p className="text-sm text-gray-600">Quá hạn</p>
                   <p className="text-2xl font-bold text-gray-900">
                     {stats.overdue}
                   </p>
@@ -240,7 +240,7 @@ export default function DashboardPage() {
             <div>
               <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
                 <AlertCircle className="h-5 w-5 text-yellow-600" />
-                <span>Sắp Đến Hạn ({stats.dueSoon})</span>
+                <span>Sắp đến hạn ({stats.dueSoon})</span>
               </h2>
               <div className="grid gap-4">
                 {tasks
@@ -274,7 +274,7 @@ export default function DashboardPage() {
             <div>
               <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
                 <AlertCircle className="h-5 w-5 text-red-600" />
-                <span>Quá Hạn ({stats.overdue})</span>
+                <span>Quá hạn ({stats.overdue})</span>
               </h2>
               <div className="grid gap-4">
                 {tasks
@@ -299,7 +299,7 @@ export default function DashboardPage() {
 
           <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              Tất Cả Công Việc ({tasks.length})
+              Tất cả công việc ({tasks.length})
             </h2>
             {tasks.length === 0 ? (
               <Card>
@@ -334,7 +334,7 @@ export default function DashboardPage() {
       <Modal
         isOpen={showCreateUserModal}
         onClose={() => setShowCreateUserModal(false)}
-        title="Thêm Thành Viên Mới"
+        title="Thêm thành viên mới"
       >
         <CreateUserForm
           onSuccess={handleCreateUserSuccess}
@@ -345,7 +345,7 @@ export default function DashboardPage() {
       <Modal
         isOpen={showCreateTaskModal}
         onClose={() => setShowCreateTaskModal(false)}
-        title="Tạo Công Việc Mới"
+        title="Tạo công việc mới"
         size="lg"
       >
         <CreateTaskForm

@@ -79,7 +79,7 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
         reset();
         onSuccess();
       } else {
-        toast.error(result.error || "Tạo công việc thất bại");
+        toast.error(result.message || "Tạo công việc thất bại");
       }
     } catch (error) {
       toast.error("Lỗi mạng. Vui lòng thử lại.");
@@ -91,7 +91,7 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <Input
-        label="Tiêu Đề Công Việc"
+        label="Tiêu đề công việc"
         placeholder="Nhập tiêu đề công việc"
         error={errors.title?.message}
         {...register("title", {
@@ -151,7 +151,7 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
       </div>
 
       <Input
-        label="Hạn Hoàn Thành"
+        label="Hạn hoàn thành"
         type="date"
         min={getTomorrowDate()}
         error={errors.dueDate?.message}
@@ -185,7 +185,7 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
           isLoading={isLoading}
           disabled={isLoading}
         >
-          Tạo Công Việc
+          Tạo công việc
         </Button>
       </div>
     </form>

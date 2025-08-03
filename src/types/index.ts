@@ -1,3 +1,5 @@
+export type Role = "admin" | "member";
+
 export interface User {
   id: string;
   phoneNumber: string;
@@ -27,7 +29,7 @@ export interface CreateUserData {
   name: string;
   phoneNumber: string;
   password: string;
-  role: "member";
+  role: Role;
 }
 
 export interface LoginData {
@@ -38,7 +40,7 @@ export interface LoginData {
 export interface AuthUser {
   id: string;
   phoneNumber: string;
-  role: "admin" | "member";
+  role: Role;
   name: string;
 }
 
