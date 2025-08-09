@@ -32,7 +32,8 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem("auth_token");
+      const token =
+        typeof window !== "undefined" && localStorage.getItem("auth_token");
 
       const response = await fetch("/api/users", {
         headers: {
@@ -61,7 +62,8 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem("auth_token");
+      const token =
+        typeof window !== "undefined" && localStorage.getItem("auth_token");
 
       const response = await fetch("/api/tasks", {
         method: "POST",

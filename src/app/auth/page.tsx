@@ -21,7 +21,8 @@ export default function AuthPage() {
 
   useEffect(() => {
     // Check if user is already authenticated
-    const token = localStorage.getItem("auth_token");
+    const token =
+      typeof window !== "undefined" && localStorage.getItem("auth_token");
     if (token) {
       router.push("/dashboard");
     }
@@ -62,8 +63,10 @@ export default function AuthPage() {
       const result: ApiResponse = await response.json();
 
       if (result.success && result.data) {
-        localStorage.setItem("auth_token", result.token!);
-        localStorage.setItem("user_data", JSON.stringify(result.data.user));
+        typeof window !== "undefined" &&
+          localStorage.setItem("auth_token", result.token!);
+        localStorage &&
+          localStorage.setItem("user_data", JSON.stringify(result.data.user));
         toast.success("Đăng nhập thành công!");
         router.push("/dashboard");
       } else {

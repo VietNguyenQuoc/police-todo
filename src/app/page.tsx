@@ -8,7 +8,8 @@ export default function Home() {
 
   useEffect(() => {
     // Check if user is authenticated
-    const token = localStorage.getItem("auth_token");
+    const token =
+      typeof window !== "undefined" && localStorage.getItem("auth_token");
     if (token) {
       router.push("/dashboard");
     } else {

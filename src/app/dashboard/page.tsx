@@ -27,9 +27,13 @@ export default function DashboardPage() {
   const [showCreateUserModal, setShowCreateUserModal] = useState(false);
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const router = useRouter();
-  const token = useMemo(() => localStorage.getItem("auth_token"), []);
+  const token = useMemo(
+    () => typeof window !== "undefined" && localStorage.getItem("auth_token"),
+    []
+  );
   const user = useMemo(() => {
-    const userData = localStorage.getItem("user_data");
+    const userData =
+      typeof window !== "undefined" && localStorage.getItem("user_data");
     return userData ? (JSON.parse(userData) as AuthUser) : null;
   }, []);
 
@@ -45,8 +49,8 @@ export default function DashboardPage() {
       fetchTasks();
     } catch (error) {
       console.error("Invalid user data:", error);
-      localStorage.removeItem("auth_token");
-      localStorage.removeItem("user_data");
+      typeof window !== "undefined" && localStorage.removeItem("auth_token");
+      typeof window !== "undefined" && localStorage.removeItem("user_data");
       router.push("/auth");
     }
   }, [router]);
@@ -67,7 +71,7 @@ export default function DashboardPage() {
           if (b.status === "completed") return -1;
           return 0;
         });
-        
+
         setTasks(sortedTasks || []);
       } else {
         toast.error("Không thể tải danh sách công việc");

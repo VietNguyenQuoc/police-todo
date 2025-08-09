@@ -14,7 +14,7 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
   const router = useRouter();
 
   const handleLogout = () => {
-    localStorage.removeItem("auth_token");
+    typeof window !== "undefined" && localStorage.removeItem("auth_token");
     router.push("/auth");
   };
 
@@ -24,7 +24,7 @@ export const Header: React.FC<HeaderProps> = ({ user }) => {
         <div className="flex items-top space-x-4">
           <h1 className="text-xl font-bold text-gray-900">Chào {user?.name}</h1>
           {user && (
-            <span className="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-primary-100 text-primary-800">
               {user.role === "admin" ? "Quản trị viên" : "Thành viên"}
             </span>
           )}

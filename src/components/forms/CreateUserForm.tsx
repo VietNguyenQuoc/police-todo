@@ -44,7 +44,8 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem("auth_token");
+      const token =
+        typeof window !== "undefined" && localStorage.getItem("auth_token");
 
       const response = await fetch("/api/users", {
         method: "POST",
