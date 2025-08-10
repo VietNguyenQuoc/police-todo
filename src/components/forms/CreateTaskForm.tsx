@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { CreateTaskData, ApiResponse, User } from "@/types";
-import { useStorage } from "@/utils/useStorage";
+import { useStorage } from "@/hooks/useStorage";
 
 interface CreateTaskFormProps {
   onSuccess: () => void;

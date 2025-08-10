@@ -20,8 +20,9 @@ import { CreateUserForm } from "@/components/forms/CreateUserForm";
 import { CreateTaskForm } from "@/components/forms/CreateTaskForm";
 import { TaskCard } from "@/components/ui/TaskCard";
 import { Task, AuthUser, ApiResponse, TaskStatus } from "@/types";
-import { useStorage } from "@/utils/useStorage";
+import { useStorage } from "@/hooks/useStorage";
 import { getTaskState } from "./utils";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
 export default function DashboardPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -36,6 +37,12 @@ export default function DashboardPage() {
     return userData ? (JSON.parse(userData) as AuthUser) : null;
   }, []);
 
+  const { loading: isLoadingMoreTasks } = useInfiniteScroll({
+    onTrigger: async () => {
+      await fetchTasks(tasks.at(-1)?.id);
+    },
+  });
+
   const isAdmin = user?.role === "admin";
 
   useEffect(() => {
@@ -47,9 +54,9 @@ export default function DashboardPage() {
     fetchTasks();
   }, [router]);
 
-  const fetchTasks = async () => {
+  const fetchTasks = async (cursor = "") => {
     try {
-      const response = await fetch("/api/tasks", {
+      const response = await fetch(`/api/tasks?cursor=${cursor}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -58,15 +65,9 @@ export default function DashboardPage() {
       const result: ApiResponse<Task[]> = await response.json();
 
       if (result.success) {
-        const sortedTasks = result.data?.sort((a, b) => {
-          if (a.status === "completed") return 1;
-          if (b.status === "completed") return -1;
-          return 0;
-        });
-
-        setTasks(sortedTasks || []);
+        setTasks((tasks) => tasks.concat(result.data || []));
       } else {
-        toast.error("Không thể tải danh sách công việc");
+        toast.error(result.message || "Lỗi hệ thống");
       }
     } catch (error) {
       toast.error("Lỗi mạng. Vui lòng thử lại.");
@@ -302,6 +303,12 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
+
+        {/* {isLoadingMoreTasks && (
+          <div className="flex justify-center mt-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+          </div>
+        )} */}
       </main>
 
       {/* Modals */}

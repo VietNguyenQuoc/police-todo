@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { AuthUser } from "@/types";
-import { useStorage } from "@/utils/useStorage";
+import { useStorage } from "@/hooks/useStorage";
 interface HeaderProps {
   user?: AuthUser;
 }
