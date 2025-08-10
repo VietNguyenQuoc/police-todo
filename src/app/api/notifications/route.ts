@@ -10,6 +10,7 @@ import {
 import { db } from "@/lib/firebase";
 import { sendTaskReminder } from "@/utils/twilio";
 import { ApiResponse, Task } from "@/types";
+import dayjs from "dayjs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -41,15 +42,12 @@ export async function POST(request: NextRequest) {
 
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        const dueDate =
-          taskData.dueDate instanceof Date
-            ? taskData.dueDate
-            : new Date((taskData.dueDate as any).seconds * 1000);
+        const dueDate = dayjs(taskData.dueDate);
 
         const success = await sendTaskReminder(
           userData.phoneNumber,
           taskData.title,
-          dueDate
+          dueDate.toDate()
         );
 
         if (success) {
