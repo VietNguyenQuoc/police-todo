@@ -15,13 +15,27 @@ export interface Task {
   description: string;
   assignedTo: string; // User ID
   assignedBy: string; // Admin User ID
-  dueDate: Date;
+  dueDate: string;
   status: TaskStatus;
+  assignedToUser: {
+    id: string;
+    name: string;
+    phoneNumber: string;
+  };
+  assignedByUser: {
+    id: string;
+    name: string;
+    phoneNumber: string;
+  };
 }
 
-export type CreateTaskData = Omit<Task, "id" | "status">;
+export type CreateTaskData = Omit<
+  Task,
+  "id" | "status" | "assignedToUser" | "assignedByUser"
+>;
 
-export type UpdateTaskData = Pick<Task, "id"> & Partial<Omit<Task, "id">>;
+export type UpdateTaskData = Pick<Task, "id"> &
+  Partial<Omit<Task, "id" | "assignedToUser" | "assignedByUser">>;
 
 export interface CreateUserData {
   name: string;
@@ -55,15 +69,4 @@ export interface CreateUserResponse<T = any> {
   data?: T;
 }
 
-export interface TaskWithUser extends Task {
-  assignedToUser: {
-    id: string;
-    name: string;
-    phoneNumber: string;
-  };
-  assignedByUser: {
-    id: string;
-    name: string;
-    phoneNumber: string;
-  };
-}
+export type TaskState = TaskStatus | "overdue" | "dueSoon";

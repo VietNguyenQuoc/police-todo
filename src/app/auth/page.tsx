@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { LoginData, ApiResponse } from "@/types";
+import { useStorage } from "@/utils/useStorage";
 
 export default function AuthPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-
+  const storage = useStorage();
   const {
     register,
     handleSubmit,
@@ -21,8 +22,7 @@ export default function AuthPage() {
 
   useEffect(() => {
     // Check if user is already authenticated
-    const token =
-      typeof window !== "undefined" && localStorage.getItem("auth_token");
+    const token = storage?.getItem("auth_token");
     if (token) {
       router.push("/dashboard");
     }
@@ -63,10 +63,8 @@ export default function AuthPage() {
       const result: ApiResponse = await response.json();
 
       if (result.success && result.data) {
-        typeof window !== "undefined" &&
-          localStorage.setItem("auth_token", result.token!);
-        localStorage &&
-          localStorage.setItem("user_data", JSON.stringify(result.data.user));
+        storage?.setItem("auth_token", result.token!);
+        storage?.setItem("user_data", JSON.stringify(result.data.user));
         toast.success("Đăng nhập thành công!");
         router.push("/dashboard");
       } else {

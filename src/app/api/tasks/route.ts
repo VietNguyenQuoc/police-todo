@@ -9,6 +9,8 @@ import {
   doc,
   getDoc,
   updateDoc,
+  startAfter,
+  limit,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getAuthUser } from "@/utils/auth";
@@ -16,13 +18,13 @@ import {
   CreateTaskData,
   ApiResponse,
   Task,
-  TaskWithUser,
   UpdateTaskData,
   AuthUser,
-  User,
 } from "@/types";
-
 import { omitBy, isNil } from "lodash";
+import dayjs from "dayjs";
+
+const DEFAULT_LIMIT = 5;
 
 export async function POST(request: NextRequest) {
   try {
@@ -71,8 +73,18 @@ export async function POST(request: NextRequest) {
       title,
       description,
       assignedTo,
+      assignedToUser: {
+        id: assignedTo,
+        name: userDoc.data().name,
+        phoneNumber: userDoc.data().phoneNumber,
+      },
       assignedBy: user.id,
-      dueDate: new Date(dueDate),
+      assignedByUser: {
+        id: user.id,
+        name: user.name,
+        phoneNumber: user.phoneNumber,
+      },
+      dueDate: dayjs(dueDate).format("YYYY-MM-DD"),
       status: "pending",
     };
 
@@ -103,58 +115,40 @@ export async function GET(request: NextRequest) {
   try {
     // Get auth token from headers
     const user = getAuthUser(request) as AuthUser;
+    const searchParams = request.nextUrl.searchParams;
+    const cursor = searchParams.get("cursor");
 
     const tasksRef = collection(db, "tasks");
     let q;
+
+    const cursorDoc = cursor ? await getDoc(doc(db, "tasks", cursor)) : null;
+    const commonQueryParams = [
+      orderBy("status", "desc"),
+      orderBy("dueDate", "asc"),
+      ...(cursor ? [startAfter(cursorDoc)] : []),
+      limit(DEFAULT_LIMIT),
+    ];
 
     // If user is member, only show their tasks
     if (user.role === "member") {
       q = query(
         tasksRef,
         where("assignedTo", "==", user.id),
-        orderBy("dueDate", "asc")
+        ...commonQueryParams
       );
     } else {
       // If admin, show all tasks
-      q = query(tasksRef, orderBy("dueDate", "asc"));
+      q = query(tasksRef, ...commonQueryParams);
     }
 
     const querySnapshot = await getDocs(q);
 
-    // Get user details for each task
-    const tasksWithUsers: TaskWithUser[] = [];
-
-    for (const taskDoc of querySnapshot.docs) {
-      const taskData = taskDoc.data() as Omit<Task, "id">;
-
-      // Get assigned user details
-      const assignedUserRef = doc(db, "users", taskData.assignedTo);
-      const assignedUser = (await getDoc(assignedUserRef)).data() as User;
-
-      // Get assigned by user details
-      const assignedByUserRef = doc(db, "users", taskData.assignedBy);
-      const assignedByUser = (await getDoc(assignedByUserRef)).data() as User;
-
-      tasksWithUsers.push({
-        id: taskDoc.id,
-        ...taskData,
-        dueDate: new Date((taskData.dueDate as any).seconds * 1000),
-        assignedToUser: {
-          id: taskData.assignedTo,
-          name: assignedUser.name,
-          phoneNumber: assignedUser.phoneNumber,
-        },
-        assignedByUser: {
-          id: taskData.assignedBy,
-          name: assignedByUser.name,
-          phoneNumber: assignedByUser.phoneNumber,
-        },
-      });
-    }
-
     return NextResponse.json<ApiResponse>({
       success: true,
-      data: tasksWithUsers,
+      data: querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })),
     });
   } catch (error) {
     console.error("Get tasks error:", error);

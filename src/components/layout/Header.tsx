@@ -5,16 +5,16 @@ import { useRouter } from "next/navigation";
 import { LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { AuthUser } from "@/types";
-
+import { useStorage } from "@/utils/useStorage";
 interface HeaderProps {
   user?: AuthUser;
 }
 
 export const Header: React.FC<HeaderProps> = ({ user }) => {
   const router = useRouter();
-
+  const storage = useStorage();
   const handleLogout = () => {
-    typeof window !== "undefined" && localStorage.removeItem("auth_token");
+    storage?.removeItem("auth_token");
     router.push("/auth");
   };
 

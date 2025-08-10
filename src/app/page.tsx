@@ -2,14 +2,15 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useStorage } from "@/utils/useStorage";
 
 export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
     // Check if user is authenticated
-    const token =
-      typeof window !== "undefined" && localStorage.getItem("auth_token");
+    const storage = useStorage();
+    const token = storage?.getItem("auth_token");
     if (token) {
       router.push("/dashboard");
     } else {

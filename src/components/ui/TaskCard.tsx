@@ -1,17 +1,18 @@
 "use client";
 
 import React from "react";
-import { format, isAfter, isBefore, addDays } from "date-fns";
-import { Calendar, User, Clock } from "lucide-react";
+import { Calendar, User } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/Card";
 import { Message } from "@/components/ui/Message";
 import { Badge } from "@/components/ui/Badge";
-import { TaskWithUser } from "@/types";
+import { Task, TaskState } from "@/types";
 import { cn } from "@/utils/cn";
 import { Button } from "./Button";
+import dayjs from "dayjs";
 
 interface TaskCardProps {
-  task: TaskWithUser;
+  task: Task;
+  state?: TaskState;
   showAssignedTo?: boolean;
   onCompleteTask?: () => void;
 }
@@ -20,18 +21,11 @@ export const TaskCard: React.FC<TaskCardProps> = ({
   task,
   showAssignedTo = false,
   onCompleteTask,
+  state,
 }) => {
-  const now = new Date();
-  const dueDate =
-    task.dueDate instanceof Date ? task.dueDate : new Date(task.dueDate);
-  const threeDaysFromNow = addDays(now, 3);
-
-  const isCompleted = task.status === "completed";
-  const isOverdue = isBefore(dueDate, now) && task.status === "pending";
-  const isDueSoon =
-    isAfter(dueDate, now) &&
-    isBefore(dueDate, threeDaysFromNow) &&
-    task.status === "pending";
+  const isCompleted = state === "completed";
+  const isOverdue = state === "overdue";
+  const isDueSoon = state === "dueSoon";
 
   const getStatusText = () => {
     if (isCompleted) return "Hoàn thành";
@@ -70,7 +64,7 @@ export const TaskCard: React.FC<TaskCardProps> = ({
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-1">
               <Calendar size={14} />
-              <span>Hạn: {format(dueDate, "dd/MM/yyyy")}</span>
+              <span>Hạn: {dayjs(task.dueDate).format("DD/MM/YYYY")}</span>
             </div>
 
             {showAssignedTo && (

@@ -19,21 +19,20 @@ import { StatCard } from "@/components/ui/StatCard";
 import { CreateUserForm } from "@/components/forms/CreateUserForm";
 import { CreateTaskForm } from "@/components/forms/CreateTaskForm";
 import { TaskCard } from "@/components/ui/TaskCard";
-import { TaskWithUser, AuthUser, ApiResponse } from "@/types";
+import { Task, AuthUser, ApiResponse, TaskStatus } from "@/types";
+import { useStorage } from "@/utils/useStorage";
+import { getTaskState } from "./utils";
 
 export default function DashboardPage() {
-  const [tasks, setTasks] = useState<TaskWithUser[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateUserModal, setShowCreateUserModal] = useState(false);
   const [showCreateTaskModal, setShowCreateTaskModal] = useState(false);
   const router = useRouter();
-  const token = useMemo(
-    () => typeof window !== "undefined" && localStorage.getItem("auth_token"),
-    []
-  );
+  const storage = useStorage();
+  const token = useMemo(() => storage?.getItem("auth_token"), [storage]);
   const user = useMemo(() => {
-    const userData =
-      typeof window !== "undefined" && localStorage.getItem("user_data");
+    const userData = storage?.getItem("user_data");
     return userData ? (JSON.parse(userData) as AuthUser) : null;
   }, []);
 
@@ -45,14 +44,7 @@ export default function DashboardPage() {
       return;
     }
 
-    try {
-      fetchTasks();
-    } catch (error) {
-      console.error("Invalid user data:", error);
-      typeof window !== "undefined" && localStorage.removeItem("auth_token");
-      typeof window !== "undefined" && localStorage.removeItem("user_data");
-      router.push("/auth");
-    }
+    fetchTasks();
   }, [router]);
 
   const fetchTasks = async () => {
@@ -63,7 +55,7 @@ export default function DashboardPage() {
         },
       });
 
-      const result: ApiResponse<TaskWithUser[]> = await response.json();
+      const result: ApiResponse<Task[]> = await response.json();
 
       if (result.success) {
         const sortedTasks = result.data?.sort((a, b) => {
@@ -83,6 +75,17 @@ export default function DashboardPage() {
     }
   };
 
+  const updateTaskStatus = async (taskId: string, status: TaskStatus) => {
+    setTasks((state) => {
+      return state.map((task) => {
+        if (task.id === taskId) {
+          return { ...task, status };
+        }
+        return task;
+      });
+    });
+  };
+
   const handleCreateUserSuccess = () => {
     setShowCreateUserModal(false);
     // Optionally refresh any user-related data
@@ -94,6 +97,8 @@ export default function DashboardPage() {
   };
 
   const handleCompleteTask = async (taskId: string) => {
+    updateTaskStatus(taskId, "completed");
+
     const response = await fetch("api/tasks", {
       method: "PATCH",
       body: JSON.stringify({
@@ -111,32 +116,20 @@ export default function DashboardPage() {
 
     if (body.success) {
       toast.success("Cập nhật công việc thành công");
-      fetchTasks();
     } else {
       toast.error(body.message || "Lỗi hệ thống");
     }
   };
 
   const getTaskStats = () => {
-    const now = new Date();
-    const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
-
     const pendingTasks = tasks.filter((task) => task.status === "pending");
     const completedTasks = tasks.filter((task) => task.status === "completed");
-    const overdueTasks = tasks.filter((task) => {
-      const dueDate =
-        task.dueDate instanceof Date ? task.dueDate : new Date(task.dueDate);
-      return task.status === "pending" && dueDate < now;
-    });
-    const dueSoonTasks = tasks.filter((task) => {
-      const dueDate =
-        task.dueDate instanceof Date ? task.dueDate : new Date(task.dueDate);
-      return (
-        task.status === "pending" &&
-        dueDate <= threeDaysFromNow &&
-        dueDate >= now
-      );
-    });
+    const overdueTasks = tasks.filter(
+      (task) => getTaskState(task) === "overdue"
+    );
+    const dueSoonTasks = tasks.filter(
+      (task) => getTaskState(task) === "dueSoon"
+    );
 
     return {
       total: tasks.length,
@@ -225,47 +218,13 @@ export default function DashboardPage() {
           <StatCard
             icon={AlertCircle}
             color="red"
-            label="Quá hạn"
-            value={stats.overdue}
+            label="Sắp đến hạn"
+            value={stats.dueSoon}
           />
         </div>
 
         {/* Tasks Section */}
         <div className="space-y-6">
-          {stats.dueSoon > 0 && (
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
-                <AlertCircle className="h-4 w-4 md:h-5 md:w-5 text-yellow-600" />
-                <span>Sắp đến hạn ({stats.dueSoon})</span>
-              </h2>
-              <div className="grid gap-4">
-                {tasks
-                  .filter((task) => {
-                    const now = new Date();
-                    const threeDaysFromNow = new Date(
-                      now.getTime() + 3 * 24 * 60 * 60 * 1000
-                    );
-                    const dueDate =
-                      task.dueDate instanceof Date
-                        ? task.dueDate
-                        : new Date(task.dueDate);
-                    return (
-                      task.status === "pending" &&
-                      dueDate <= threeDaysFromNow &&
-                      dueDate >= now
-                    );
-                  })
-                  .map((task) => (
-                    <TaskCard
-                      key={task.id}
-                      task={task}
-                      showAssignedTo={isAdmin}
-                    />
-                  ))}
-              </div>
-            </div>
-          )}
-
           {stats.overdue > 0 && (
             <div>
               <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
@@ -274,19 +233,36 @@ export default function DashboardPage() {
               </h2>
               <div className="grid gap-4">
                 {tasks
-                  .filter((task) => {
-                    const now = new Date();
-                    const dueDate =
-                      task.dueDate instanceof Date
-                        ? task.dueDate
-                        : new Date(task.dueDate);
-                    return task.status === "pending" && dueDate < now;
-                  })
+                  .filter((task) => getTaskState(task) === "overdue")
                   .map((task) => (
                     <TaskCard
+                      state="overdue"
                       key={task.id}
                       task={task}
                       showAssignedTo={isAdmin}
+                      onCompleteTask={() => handleCompleteTask(task.id)}
+                    />
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {stats.dueSoon > 0 && (
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center space-x-2">
+                <AlertCircle className="h-4 w-4 md:h-5 md:w-5 text-yellow-600" />
+                <span>Sắp đến hạn ({stats.dueSoon})</span>
+              </h2>
+              <div className="grid gap-4">
+                {tasks
+                  .filter((task) => getTaskState(task) === "dueSoon")
+                  .map((task) => (
+                    <TaskCard
+                      state="dueSoon"
+                      key={task.id}
+                      task={task}
+                      showAssignedTo={isAdmin}
+                      onCompleteTask={() => handleCompleteTask(task.id)}
                     />
                   ))}
               </div>
@@ -315,6 +291,7 @@ export default function DashboardPage() {
               <div className="grid gap-4">
                 {tasks.map((task) => (
                   <TaskCard
+                    state={getTaskState(task)}
                     key={task.id}
                     task={task}
                     showAssignedTo={isAdmin}

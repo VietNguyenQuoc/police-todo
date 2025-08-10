@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { CreateUserData, ApiResponse } from "@/types";
+import { useStorage } from "@/utils/useStorage";
 
 interface CreateUserFormProps {
   onSuccess: () => void;
@@ -17,7 +18,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
   onCancel,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
-
+  const storage = useStorage();
   const {
     register,
     handleSubmit,
@@ -44,8 +45,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({
     setIsLoading(true);
 
     try {
-      const token =
-        typeof window !== "undefined" && localStorage.getItem("auth_token");
+      const token = storage?.getItem("auth_token");
 
       const response = await fetch("/api/users", {
         method: "POST",

@@ -15,6 +15,7 @@ export const generateToken = (user: AuthUser): string => {
       id: user.id,
       phoneNumber: user.phoneNumber,
       role: user.role,
+      name: user.name,
     },
     JWT_SECRET,
     { expiresIn: "7d" }

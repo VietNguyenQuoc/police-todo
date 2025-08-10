@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { CreateTaskData, ApiResponse, User } from "@/types";
+import { useStorage } from "@/utils/useStorage";
 
 interface CreateTaskFormProps {
   onSuccess: () => void;
@@ -18,7 +19,7 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
-
+  const storage = useStorage();
   const {
     register,
     handleSubmit,
@@ -32,8 +33,7 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
 
   const fetchUsers = async () => {
     try {
-      const token =
-        typeof window !== "undefined" && localStorage.getItem("auth_token");
+      const token = storage?.getItem("auth_token");
 
       const response = await fetch("/api/users", {
         headers: {
@@ -62,8 +62,7 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
     setIsLoading(true);
 
     try {
-      const token =
-        typeof window !== "undefined" && localStorage.getItem("auth_token");
+      const token = storage?.getItem("auth_token");
 
       const response = await fetch("/api/tasks", {
         method: "POST",
