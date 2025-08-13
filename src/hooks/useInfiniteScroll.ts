@@ -6,7 +6,7 @@ type UseInfiniteScrollParams = {
   onTrigger: () => Promise<void>;
 };
 
-const DEFAULT_THRESHOLD = 0;
+const DEFAULT_THRESHOLD = 10;
 
 export const useInfiniteScroll = ({
   onTrigger,
